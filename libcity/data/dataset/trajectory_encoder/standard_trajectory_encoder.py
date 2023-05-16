@@ -60,13 +60,15 @@ class StandardTrajectoryEncoder(AbstractTrajectoryEncoder):
             current_tim = []
             for point in traj:
                 loc = point[4]
-                now_time = parse_time(point[2])
+                # now_time = parse_time(point[2])
+                now_time = point[2]
                 if loc not in self.location2id:
                     self.location2id[loc] = self.loc_id
                     self.loc_id += 1
                 current_loc.append(self.location2id[loc])
                 # 采用工作日编码到0-23，休息日编码到24-47
                 time_code = self._time_encode(now_time)
+                # time_code = now_time
                 current_tim.append(time_code)
             # 完成当前轨迹的编码，下面进行输入的形成
             if index == 0:
@@ -132,6 +134,7 @@ class StandardTrajectoryEncoder(AbstractTrajectoryEncoder):
         }
 
     def _time_encode(self, time):
+        return int(time)
         if time.weekday() in [0, 1, 2, 3, 4]:
             return time.hour
         else:

@@ -120,20 +120,16 @@ class TrajectoryDataset(AbstractDataset):
                 sessions = []  # 存放该用户所有的 session
                 session = []  # 单条轨迹
                 for index, row in enumerate(usr_traj):
-                    now_time = parse_time(row[2])
                     if index == 0:
                         session.append(row.tolist())
-                        prev_time = now_time
-                    else:
-                        time_off = cal_timeoff(now_time, prev_time)
-                        if time_off < window_size and time_off >= 0 and len(session) < max_session_len:
+                    else:                        
+                        if len(session) < max_session_len:
                             session.append(row.tolist())
                         else:
                             if len(session) >= min_session_len:
                                 sessions.append(session)
                             session = []
                             session.append(row.tolist())
-                    prev_time = now_time
                 if len(session) >= min_session_len:
                     sessions.append(session)
                 if len(sessions) >= min_sessions:

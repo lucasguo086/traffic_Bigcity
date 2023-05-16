@@ -6,6 +6,7 @@ from ray.tune.suggest.basic_variant import BasicVariantGenerator
 from ray.tune.schedulers import FIFOScheduler, ASHAScheduler, MedianStoppingRule
 from ray.tune.suggest import ConcurrencyLimiter
 import json
+import shutil
 import torch
 import random
 from libcity.config import ConfigParser
@@ -39,6 +40,22 @@ def run_model(task=None, model_name=None, dataset_name=None, config_file=None,
     logger.info('Begin pipeline, task={}, model_name={}, dataset_name={}, exp_id={}'.
                 format(str(task), str(model_name), str(dataset_name), str(exp_id)))
     logger.info(config.config)
+
+    #clean cache
+    cache_dir = "./libcity/cache"
+    if os.path.exists(cache_dir):
+        for filename in os.listdir(cache_dir):
+            file_path = os.path.join(cache_dir, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print(f'Failed to delete {file_path}. Reason: {e}')
+    else:
+        print("Cache directory doesn't exist.")
+
     # seed
     seed = config.get('seed', 0)
     set_random_seed(seed)
@@ -48,19 +65,17 @@ def run_model(task=None, model_name=None, dataset_name=None, config_file=None,
     train_data, valid_data, test_data = dataset.get_data()
     data_feature = dataset.get_data_feature()
     # 加载执行器
-    model_cache_file = './libcity/cache/{}/model_cache/{}_{}.m'.format(
-        exp_id, model_name, dataset_name)
     model = get_model(config, data_feature)
     executor = get_executor(config, model, data_feature)
-    # import pdb
-    # pdb.set_trace()
+
     # 训练
-    if train or not os.path.exists(model_cache_file):
-        executor.train(train_data, valid_data)
-        if saved_model:
-            executor.save_model(model_cache_file)
-    else:
-        executor.load_model(model_cache_file)
+    # if train or not os.path.exists(model_cache_file):
+    #     executor.train(train_data, valid_data)
+    #     if saved_model:
+    #         executor.save_model(model_cache_file)
+    # else:
+    #     executor.load_model(model_cache_file)
+    executor.train(train_data, valid_data)
     # 评估，评估结果将会放在 cache/evaluate_cache 下
     executor.evaluate(test_data)
 

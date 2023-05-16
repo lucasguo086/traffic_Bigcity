@@ -5,6 +5,7 @@ import numpy as np
 import time
 from datetime import datetime, timedelta
 from collections import defaultdict
+# import pdb
 
 
 def parse_time(time_in, timezone_offset_in_minute=0):
@@ -12,6 +13,7 @@ def parse_time(time_in, timezone_offset_in_minute=0):
     将 json 中 time_format 格式的 time 转化为 local datatime
     """
     date = datetime.strptime(time_in, '%Y-%m-%dT%H:%M:%SZ')  # 这是 UTC 时间
+    # pdb.set_trace()
     return date + timedelta(minutes=timezone_offset_in_minute)
 
 
