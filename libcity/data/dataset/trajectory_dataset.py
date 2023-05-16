@@ -229,6 +229,7 @@ class TrajectoryDataset(AbstractDataset):
         train_rate = self.config['train_rate']
         eval_rate = self.config['eval_rate']
         user_set = self.data['encoded_data'].keys()
+        print("start to divide data*************")
         for uid in tqdm(user_set, desc="dividing data"):
             encoded_trajectories = self.data['encoded_data'][uid]
             traj_len = len(encoded_trajectories)
