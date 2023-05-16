@@ -7,16 +7,15 @@ import argparse
 from libcity.pipeline import run_model
 from libcity.utils import str2bool, add_general_args
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # 增加指定的参数
     parser.add_argument('--task', type=str,
-                        default='traffic_state_pred', help='the name of task')
+                        default='traj_loc_pred', help='the name of task')
     parser.add_argument('--model', type=str,
-                        default='GRU', help='the name of model')
+                        default='DeepMove', help='the name of model')
     parser.add_argument('--dataset', type=str,
-                        default='METR_LA', help='the name of dataset')
+                        default='Beijing_Taxi_Sample', help='the name of dataset')
     parser.add_argument('--config_file', type=str,
                         default=None, help='the file name of config file')
     parser.add_argument('--saved_model', type=str2bool,
