@@ -14,7 +14,7 @@ class StandardTrajectoryEncoder(AbstractTrajectoryEncoder):
         self.uid = 0
         self.location2id = {}  # 因为原始数据集中的部分 loc id 不会被使用到因此这里需要重新编码一下
         self.loc_id = 0
-        self.tim_max = 47  # 时间编码方式得改变
+        self.tim_max = 1000  # 时间编码方式得改变
         self.history_type = self.config['history_type']
         self.feature_dict = {'history_loc': 'int', 'history_tim': 'int',
                              'current_loc': 'int', 'current_tim': 'int',
@@ -27,8 +27,6 @@ class StandardTrajectoryEncoder(AbstractTrajectoryEncoder):
         for key in parameter_list:
             if key in self.config:
                 parameters_str += '_' + str(self.config[key])
-        self.cache_file_name = os.path.join(
-            './libcity/cache/dataset_cache/', 'trajectory_{}.json'.format(parameters_str))
         # 对于这种 history 模式没办法做到 batch
         if self.history_type == 'cut_off':
             # self.config['batch_size'] = 1
@@ -67,8 +65,8 @@ class StandardTrajectoryEncoder(AbstractTrajectoryEncoder):
                     self.loc_id += 1
                 current_loc.append(self.location2id[loc])
                 # 采用工作日编码到0-23，休息日编码到24-47
+                # time_code = self._time_encode(now_time)
                 time_code = self._time_encode(now_time)
-                # time_code = now_time
                 current_tim.append(time_code)
             # 完成当前轨迹的编码，下面进行输入的形成
             if index == 0:
@@ -134,7 +132,7 @@ class StandardTrajectoryEncoder(AbstractTrajectoryEncoder):
         }
 
     def _time_encode(self, time):
-        return int(time)
+        return int(time/100)
         if time.weekday() in [0, 1, 2, 3, 4]:
             return time.hour
         else:

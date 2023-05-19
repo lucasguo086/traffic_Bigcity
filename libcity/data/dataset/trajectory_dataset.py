@@ -59,11 +59,6 @@ class TrajectoryDataset(AbstractDataset):
                 encoded_data = self.encode_traj(cut_data)
                 self.data = encoded_data
                 self.pad_item = self.encoder.pad_item
-                if self.config['cache_dataset']:
-                    if not os.path.exists(self.cache_file_folder):
-                        os.makedirs(self.cache_file_folder)
-                    with open(self.encoder.cache_file_name, 'w') as f:
-                        json.dump(encoded_data, f)
         # user 来划，以及按轨迹数来划。
         # TODO: 这里可以设一个参数，现在先按照轨迹数来划吧
         train_data, eval_data, test_data = self.divide_data()
@@ -210,6 +205,12 @@ class TrajectoryDataset(AbstractDataset):
         for uid in tqdm(data, desc="encoding trajectory"):
             encoded_data[uid] = self.encoder.encode(int(uid), data[uid])
         self.encoder.gen_data_feature()
+        # print("encoding trajectory finishing*************")
+        # print(self.encoder.data_feature)
+        # print(self.encoder.pad_item)
+        # print(encoded_data)
+        # import pdb
+        # pdb.set_trace()
         return {
             'data_feature': self.encoder.data_feature,
             'pad_item': self.encoder.pad_item,
