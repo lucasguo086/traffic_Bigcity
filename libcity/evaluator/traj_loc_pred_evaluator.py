@@ -87,16 +87,11 @@ class TrajLocPredEvaluator(AbstractEvaluator):
 
     def save_result(self, save_path, filename=None):
         self.evaluate()
-        if not os.path.exists(save_path):
-            os.mkdir(save_path)
         if filename is None:
             # 使用时间戳
             filename = time.strftime(
                 "%Y_%m_%d_%H_%M_%S", time.localtime(time.time()))
         self._logger.info('evaluate result is {}'.format(json.dumps(self.result, indent=1)))
-        with open(os.path.join(save_path, '{}.json'.format(filename)), 'w') \
-                as f:
-            json.dump(self.result, f)
 
     def clear(self):
         self.result = {}

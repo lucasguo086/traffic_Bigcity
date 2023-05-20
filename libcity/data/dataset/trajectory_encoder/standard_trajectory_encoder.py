@@ -36,6 +36,8 @@ class StandardTrajectoryEncoder(AbstractTrajectoryEncoder):
     def encode(self, uid, trajectories, negative_sample=None):
         """standard encoder use the same method as DeepMove
 
+        不重复生成训练数据, 一条轨迹可以产生多条训练数据，根据第一个点预测第二个点，前两个点预测第三个点
+        不做这个处理
         Recode poi id. Encode timestamp with its hour.
 
         Args:
@@ -68,7 +70,7 @@ class StandardTrajectoryEncoder(AbstractTrajectoryEncoder):
                 # time_code = self._time_encode(now_time)
                 time_code = self._time_encode(now_time)
                 current_tim.append(time_code)
-            # 完成当前轨迹的编码，下面进行输入的形成
+
             if index == 0:
                 # 因为要历史轨迹特征，所以第一条轨迹是不能构成模型输入的
                 if self.history_type == 'splice':
@@ -78,33 +80,62 @@ class StandardTrajectoryEncoder(AbstractTrajectoryEncoder):
                     history_loc.append(current_loc)
                     history_tim.append(current_tim)
                 continue
-            # 一条轨迹可以产生多条训练数据，根据第一个点预测第二个点，前两个点预测第三个点....
-            for i in range(len(current_loc) - 1):
-                trace = []
-                target = current_loc[i+1]
-                target_tim = current_tim[i+1]
-                trace.append(history_loc.copy())
-                trace.append(history_tim.copy())
-                trace.append(current_loc[:i+1])
-                trace.append(current_tim[:i+1])
-                trace.append(target)
-                trace.append(target_tim)
-                trace.append(uid)
-                if negative_sample is not None:
-                    neg_loc = []
-                    for neg in negative_sample[index]:
-                        if neg not in self.location2id:
-                            self.location2id[neg] = self.loc_id
-                            self.loc_id += 1
-                        neg_loc.append(self.location2id[neg])
-                    trace.append(neg_loc)
-                encoded_trajectories.append(trace)
-            if self.history_type == 'splice':
-                history_loc += current_loc
-                history_tim += current_tim
-            else:
-                history_loc.append(current_loc)
-                history_tim.append(current_tim)
+
+            length = len(current_loc)
+            trace = []
+            trace.append(history_loc)
+            trace.append(history_tim)
+            trace.append(current_loc[:length-1])
+            trace.append(current_tim[:length-1])
+            trace.append(current_loc[length-1])
+            trace.append(current_tim[length-1])
+            trace.append(uid)
+            encoded_trajectories.append(trace)
+            # 完成当前轨迹的编码，下面进行输入的形成
+            # if index == 0:
+            #     # 因为要历史轨迹特征，所以第一条轨迹是不能构成模型输入的
+            #     if self.history_type == 'splice':
+            #         history_loc += current_loc
+            #         history_tim += current_tim
+            #     else:
+            #         history_loc.append(current_loc)
+            #         history_tim.append(current_tim)
+            #     continue
+            # # 一条轨迹可以产生多条训练数据，根据第一个点预测第二个点，前两个点预测第三个点....
+            # for i in range(len(current_loc) - 1):
+            #     trace = []
+            #     target = current_loc[i+1]
+            #     target_tim = current_tim[i+1]
+            #     trace.append(history_loc.copy())
+            #     print(trace)
+            #     trace.append(history_tim.copy())
+            #     print(trace)
+            #     trace.append(current_loc[:i+1])
+            #     print(trace)
+            #     trace.append(current_tim[:i+1])
+            #     print(trace)
+            #     trace.append(target)
+            #     print(trace)
+            #     trace.append(target_tim)
+            #     print(trace)
+            #     trace.append(uid)
+            #     print(trace)
+            #     print("*********************")
+            #     if negative_sample is not None:
+            #         neg_loc = []
+            #         for neg in negative_sample[index]:
+            #             if neg not in self.location2id:
+            #                 self.location2id[neg] = self.loc_id
+            #                 self.loc_id += 1
+            #             neg_loc.append(self.location2id[neg])
+            #         trace.append(neg_loc)
+            #     encoded_trajectories.append(trace)
+            # if self.history_type == 'splice':
+            #     history_loc += current_loc
+            #     history_tim += current_tim
+            # else:
+            #     history_loc.append(current_loc)
+            #     history_tim.append(current_tim)
         return encoded_trajectories
 
     def gen_data_feature(self):

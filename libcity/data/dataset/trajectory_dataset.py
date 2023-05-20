@@ -75,6 +75,8 @@ class TrajectoryDataset(AbstractDataset):
 
     def cutter_filter(self):
         """
+        把超过20的轨迹进行切割, 小于5的轨迹丢弃
+        
         切割后的轨迹存储格式: (dict)
             {
                 uid: [
@@ -98,8 +100,8 @@ class TrajectoryDataset(AbstractDataset):
             self.data_path, '{}.dyna'.format(self.dyna_file)))
         # filter inactive poi
         group_location = traj.groupby('location').count()
-        filter_location = group_location[group_location['time'] >= self.config['min_checkins']]
-        location_index = filter_location.index.tolist()
+        # filter_location = group_location[group_location['time'] >= self.config['min_checkins']]
+        location_index = group_location.index.tolist()
         traj = traj[traj['location'].isin(location_index)]
         user_set = pd.unique(traj['entity_id'])
         res = {}
@@ -112,8 +114,9 @@ class TrajectoryDataset(AbstractDataset):
             # 按照时间窗口进行切割
             for uid in tqdm(user_set, desc="cut and filter trajectory"):
                 usr_traj = traj[traj['entity_id'] == uid].to_numpy()
-                sessions = []  # 存放该用户所有的 session
+                sessions = []
                 session = []  # 单条轨迹
+                #轨迹切割, 需要保证轨迹大于5, 小于20
                 for index, row in enumerate(usr_traj):
                     if index == 0:
                         session.append(row.tolist())
