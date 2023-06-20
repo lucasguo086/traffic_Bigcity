@@ -26,6 +26,8 @@ class TrajLocPredExecutor(AbstractExecutor):
         self.scheduler = self._build_scheduler()
 
     def train(self, train_dataloader, eval_dataloader):
+        import pdb
+        pdb.set_trace()
         if not os.path.exists(self.tmp_path):
             os.makedirs(self.tmp_path)
         metrics = {}
@@ -84,6 +86,8 @@ class TrajLocPredExecutor(AbstractExecutor):
         torch.save((self.model.state_dict(), self.optimizer.state_dict()), cache_name)
 
     def evaluate(self, test_dataloader):
+        import pdb
+        pdb.set_trace()
         self.model.train(False)
         self.evaluator.clear()
         for batch in test_dataloader:
