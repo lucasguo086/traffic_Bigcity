@@ -236,9 +236,9 @@ class GeoSANDataset(AbstractDataset):
             time = getattr(row, 'time')
             if loc not in self.loc2idx:
                 continue
-            time = datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
+            # time = datetime.strptime(time, '%Y-%m-%dT%H:%M:%SZ')
             # time = datetime.strptime(time, "%Y-%m-%d %H:%M:%S+00:00")
-            time_idx = time.weekday() * 24 + time.hour + 1
+            time_idx = int(time/1000)+1
             loc_idx = self.loc2idx[loc]
             region = latlon2quadkey(float(lat), float(lon), self.LOD)
             if region not in region2idx:

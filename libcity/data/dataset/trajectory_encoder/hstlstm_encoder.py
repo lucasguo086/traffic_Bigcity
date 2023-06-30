@@ -66,7 +66,7 @@ class HstlstmEncoder(AbstractTrajectoryEncoder):
             pre_lat = None
             for index, point in enumerate(traj):
                 loc = point[4]
-                now_time = parse_time(point[2])
+                now_time = point[2]
                 lon, lat = parse_coordinate(self.geo.loc[self.geo['geo_id'] == loc].iloc[0]['coordinates'])
                 if index == 0:
                     if loc not in self.location2id:
@@ -80,7 +80,7 @@ class HstlstmEncoder(AbstractTrajectoryEncoder):
                         self.location2id[loc] = self.loc_id
                         self.loc_id += 1
                     current_loc.append(self.location2id[loc])
-                    tim_diff = datetime.timestamp(now_time) - datetime.timestamp(pre_time)
+                    tim_diff = int((now_time - pre_time)/10)
                     if tim_diff > self.tim_max:
                         self.tim_max = tim_diff
                     tim_interval.append(tim_diff)
@@ -91,24 +91,42 @@ class HstlstmEncoder(AbstractTrajectoryEncoder):
                 pre_time = now_time
                 pre_lat = lat
                 pre_lon = lon
+
+            length = len(current_loc)
+            trace = []
+            target = current_loc[length-1]
+            trace.append(current_loc[:length-1])
+            trace.append(tim_interval[:length-1])
+            trace.append(dis[:length-1])
+            trace.append(target)
+            trace.append(uid)
+            if negative_sample is not None:
+                neg_loc = []
+                for neg in negative_sample[index]:
+                    if neg not in self.location2id:
+                        self.location2id[neg] = self.loc_id
+                        self.loc_id += 1
+                    neg_loc.append(self.location2id[neg])
+                trace.append(neg_loc)
+            encoded_trajectories.append(trace)
             # 一条轨迹可以产生多条训练数据，根据第一个点预测第二个点，前两个点预测第三个点....
-            for i in range(len(current_loc) - 1):
-                trace = []
-                target = current_loc[i+1]
-                trace.append(current_loc[:i+1])
-                trace.append(tim_interval[:i+1])
-                trace.append(dis[:i+1])
-                trace.append(target)
-                trace.append(uid)
-                if negative_sample is not None:
-                    neg_loc = []
-                    for neg in negative_sample[index]:
-                        if neg not in self.location2id:
-                            self.location2id[neg] = self.loc_id
-                            self.loc_id += 1
-                        neg_loc.append(self.location2id[neg])
-                    trace.append(neg_loc)
-                encoded_trajectories.append(trace)
+            # for i in range(len(current_loc) - 1):
+            #     trace = []
+            #     target = current_loc[i+1]
+            #     trace.append(current_loc[:i+1])
+            #     trace.append(tim_interval[:i+1])
+            #     trace.append(dis[:i+1])
+            #     trace.append(target)
+            #     trace.append(uid)
+            #     if negative_sample is not None:
+            #         neg_loc = []
+            #         for neg in negative_sample[index]:
+            #             if neg not in self.location2id:
+            #                 self.location2id[neg] = self.loc_id
+            #                 self.loc_id += 1
+            #             neg_loc.append(self.location2id[neg])
+            #         trace.append(neg_loc)
+            #     encoded_trajectories.append(trace)
         return encoded_trajectories
 
     def gen_data_feature(self):

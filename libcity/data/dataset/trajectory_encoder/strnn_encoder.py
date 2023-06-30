@@ -63,12 +63,12 @@ class StrnnEncoder(AbstractTrajectoryEncoder):
             current_longi = []
             current_lati = []
             current_points = []
-            start_time = parse_time(traj[0][2])
+            start_time = traj[0][2]
             # 以当天凌晨的时间作为计算 time_off 的基准
-            base_time = cal_basetime(start_time, True)
+            base_time = start_time
             for point in traj:
                 loc = point[4]
-                now_time = parse_time(point[2])
+                now_time = point[2]
                 if loc not in self.location2id:
                     self.location2id[loc] = self.loc_id
                     self.loc_id += 1
@@ -76,7 +76,8 @@ class StrnnEncoder(AbstractTrajectoryEncoder):
                 current_loc.append(self.location2id[loc])
                 current_lati.append(self.geo_coord[loc][0])
                 current_longi.append(self.geo_coord[loc][1])
-                time_code = int(cal_timeoff(now_time, base_time))
+                time_code = now_time - base_time
+                # time_code = int(cal_timeoff(now_time, base_time))
                 if time_code > self.tim_max:
                     self.tim_max = time_code
                 current_tim.append(time_code)

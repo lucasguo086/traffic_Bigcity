@@ -29,7 +29,7 @@ class LstpmEncoder(AbstractTrajectoryEncoder):
         self.location2id = {}  # 因为原始数据集中的部分 loc id 不会被使用到因此这里需要重新编码一下
         self.id2location = {}
         self.loc_id = 0
-        self.tim_max = 47  # LSTPM 做的是 48 个 time slot
+        self.tim_max = 1000  # LSTPM 做的是 48 个 time slot
         self.feature_dict = {'history_loc': 'array of int', 'history_tim': 'array of int',
                              'current_loc': 'int', 'current_tim': 'int', 'dilated_rnn_input_index': 'no_pad_int',
                              'history_avg_distance': 'no_pad_float',
@@ -74,7 +74,7 @@ class LstpmEncoder(AbstractTrajectoryEncoder):
             current_tim = []
             for point in traj:
                 loc = point[4]
-                now_time = parse_time(point[2])
+                now_time = point[2]
                 if loc not in self.location2id:
                     self.location2id[loc] = self.loc_id
                     self.id2location[self.loc_id] = loc
@@ -100,28 +100,29 @@ class LstpmEncoder(AbstractTrajectoryEncoder):
                 history_loc_central.append((np.mean(lat), np.mean(lon)))
                 continue
             # 一条轨迹可以生成多个数据点
-            for i in range(len(current_loc) - 1):
-                trace = []
-                target = current_loc[i+1]
-                dilated_rnn_input_index = self._create_dilated_rnn_input(current_loc[:i+1])
-                history_avg_distance = self._gen_distance_matrix(current_loc[:i+1], history_loc_central)
-                trace.append(history_loc.copy())
-                trace.append(history_tim.copy())
-                trace.append(current_loc[:i+1])
-                trace.append(current_tim[:i+1])
-                trace.append(dilated_rnn_input_index)
-                trace.append(history_avg_distance)
-                trace.append(target)
-                trace.append(uid)
-                if negative_sample is not None:
-                    neg_loc = []
-                    for neg in negative_sample[index]:
-                        if neg not in self.location2id:
-                            self.location2id[neg] = self.loc_id
-                            self.loc_id += 1
-                        neg_loc.append(self.location2id[neg])
-                    trace.append(neg_loc)
-                encoded_trajectories.append(trace)
+            # for i in range(len(current_loc) - 1):
+            trace = []
+            length = len(current_loc)
+            target = current_loc[length-1]
+            dilated_rnn_input_index = self._create_dilated_rnn_input(current_loc[:length-1])
+            history_avg_distance = self._gen_distance_matrix(current_loc[:length-1], history_loc_central)
+            trace.append(history_loc.copy())
+            trace.append(history_tim.copy())
+            trace.append(current_loc[:length-1])
+            trace.append(current_tim[:length-1])
+            trace.append(dilated_rnn_input_index)
+            trace.append(history_avg_distance)
+            trace.append(target)
+            trace.append(uid)
+            if negative_sample is not None:
+                neg_loc = []
+                for neg in negative_sample[index]:
+                    if neg not in self.location2id:
+                        self.location2id[neg] = self.loc_id
+                        self.loc_id += 1
+                    neg_loc.append(self.location2id[neg])
+                trace.append(neg_loc)
+            encoded_trajectories.append(trace)
             history_loc.append(current_loc)
             history_tim.append(current_tim)
             # calculate current_loc
@@ -198,7 +199,4 @@ class LstpmEncoder(AbstractTrajectoryEncoder):
         return history_avg_distance
 
     def _time_encode(self, time):
-        if time.weekday() in [0, 1, 2, 3, 4]:
-            return time.hour
-        else:
-            return time.hour + 24
+        return int(time/100)

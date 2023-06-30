@@ -104,10 +104,10 @@ class DeepMove(AbstractModel):
         for t in b:
             nn.init.constant_(t, 0)
 
-    batch_copy = deepcopy(batch)
-    score = model_name(batch)
-    batch_copy['current_loc'].append(score)
-    batch_copy['current_time'].append(dis/100 + )
+    # batch_copy = deepcopy(batch)
+    # score = model_name(batch)
+    # batch_copy['current_loc'].append(score)
+    # batch_copy['current_time'].append(dis/100 + )
     def forward(self, batch):
         loc = batch['current_loc']
         tim = batch['current_tim']
