@@ -191,6 +191,7 @@ class TrajectoryDataset(AbstractDataset):
         print("start to divide data*************")
         for uid in tqdm(user_set, desc="dividing data"):
             encoded_trajectories = self.data['encoded_data'][uid]
+            
             traj_len = len(encoded_trajectories)
             # 根据 traj_len 来划分 train eval test
             train_num = math.ceil(traj_len * train_rate)
@@ -199,6 +200,7 @@ class TrajectoryDataset(AbstractDataset):
             train_data += encoded_trajectories[:train_num]
             eval_data += encoded_trajectories[train_num:eval_num]
             test_data += encoded_trajectories[eval_num:]
+
         return train_data, eval_data, test_data
 
     def get_encoder(self):

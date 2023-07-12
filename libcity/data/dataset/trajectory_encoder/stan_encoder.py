@@ -69,12 +69,12 @@ class StanEncoder(AbstractTrajectoryEncoder):
             current_tim = []
             for i, point in enumerate(traj):
                 loc = point[4]
-                now_time = parse_time(point[2])
+                now_time = point[2]
                 if loc not in self.location2id:
                     self.location2id[loc] = self.loc_id
                     self.id2location[self.loc_id] = loc
                     self.loc_id += 1
-                time_code = self._time_encode(now_time)
+                time_code = int(now_time/100)
                 current_traj[i][0] = uid
                 current_traj[i][1] = self.location2id[loc]
                 current_traj[i][2] = time_code
@@ -108,7 +108,7 @@ class StanEncoder(AbstractTrajectoryEncoder):
         spatial_mat = self._cal_poi_matrix()
         self.data_feature = {
             'loc_size': self.loc_id,
-            'tim_size': 169,  # padding value is zero, true time code is 1-168
+            'tim_size': 1000,  # padding value is zero, true time code is 1-168
             'uid_size': self.uid,
             'spatial_matrix': spatial_mat,
             'ex': self.ex
@@ -120,7 +120,7 @@ class StanEncoder(AbstractTrajectoryEncoder):
         cur_len = len(current_tim)
         for i in range(cur_len):
             for j in range(cur_len):
-                off = abs(cal_timeoff(current_tim[i], current_tim[j]))
+                off = current_tim[i]-current_tim[j]
                 mat[i][j] = off
                 if off > self.ex[3]:
                     self.ex[3] = off
@@ -134,7 +134,7 @@ class StanEncoder(AbstractTrajectoryEncoder):
             if i == 0:
                 continue
             for j in range(i):
-                off = abs(cal_timeoff(current_tim[i], current_tim[j]))
+                off = current_tim[i]-current_tim[j]
                 mat[i-1][j] = off
                 if off > self.ex[3]:
                     self.ex[3] = off

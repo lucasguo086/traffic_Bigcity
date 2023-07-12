@@ -199,4 +199,4 @@ class LstpmEncoder(AbstractTrajectoryEncoder):
         return history_avg_distance
 
     def _time_encode(self, time):
-        return int(time/100)
+        return int(time/1000)

@@ -18,7 +18,7 @@ class HstlstmEncoder(AbstractTrajectoryEncoder):
         self.uid = 0
         self.location2id = {}  # 因为原始数据集中的部分 loc id 不会被使用到因此这里需要重新编码一下
         self.loc_id = 0
-        self.tim_max = 100.0  # 最大的时间差（单位秒）
+        self.tim_max = 1000.0  # 最大的时间差（单位秒）
         self.tim_interval_init = 0.0
         self.dis_max = 0.5  # 最大的距离差（单位千米）
         self.history_type = self.config['history_type']

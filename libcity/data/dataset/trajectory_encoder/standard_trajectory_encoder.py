@@ -163,7 +163,7 @@ class StandardTrajectoryEncoder(AbstractTrajectoryEncoder):
         }
 
     def _time_encode(self, time):
-        return int(time/100)
+        return int(time/1000)
         if time.weekday() in [0, 1, 2, 3, 4]:
             return time.hour
         else:
